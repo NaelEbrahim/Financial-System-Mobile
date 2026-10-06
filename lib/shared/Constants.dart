@@ -7,7 +7,7 @@ class Constants {
 
   static final appSecondColor = Color(0xff0F3BB0);
 
-  static final serverURL = 'REAL-SERVER-URL';
+  static final serverURL = 'REAL-SERVER-URL:8222/api/';
 
   static final emailRegex = RegExp(
     r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$',
