@@ -10,16 +10,20 @@ Backend repository: [Financial-system-Backend](https://github.com/NaelEbrahim/Fi
 
 * User registration with email OTP verification
 * Login with JWT access and refresh tokens
+* Forgot password and password reset
 * User profile management
 * Account balance overview
 * Send money to another account using the receiver's wallet key
+* Receive money
 * Transaction PIN verification for transfers
 * Transaction history
+* Daily transaction totals
 * In-app notifications
 * Mark notifications as read
 * Delete notifications
 * Update password
 * Update email
+* Secure token storage
 
 ## Screenshots
 
@@ -35,10 +39,11 @@ Add screenshots to the `screenshots/` folder and link them here.
 * Dart
 * Dio (HTTP client)
 * BLoC / Cubit (state management)
+* Flutter Secure Storage
 
 ## Architecture
 
-The app communicates only with the backend **API Gateway**, which validates JWT tokens and routes requests to the appropriate microservices.
+The app communicates with the backend **API Gateway**, which validates JWT tokens and routes requests to the appropriate microservices.
 
 ```text
 Flutter App
@@ -55,6 +60,28 @@ API Gateway
      +----> Notification Service
 ```
 
+### State Management
+
+The application uses a centralized `Manager` and state classes to manage application state.
+
+```text
+Flutter Screens
+       |
+       v
+    Manager
+       |
+       v
+    States
+       |
+       v
+  DioHelper
+       |
+       v
+ API Gateway
+```
+
+The `Manager` handles application operations and emits states that are consumed by the UI.
+
 ### Authentication Flow
 
 ```text
@@ -69,12 +96,13 @@ Identity Service
           v
      Flutter App
           |
-          +--> Dio interceptor adds access token
+          +--> Secure Storage
           |
-          +--> On 401, refresh token is used
+          +--> Dio Interceptor
                     |
-                    v
-             New Access Token
+                    +--> Adds access token
+                    |
+                    +--> Refreshes token on 401
 ```
 
 ## Getting Started
@@ -101,7 +129,11 @@ flutter pub get
 
 ### 3. Configure the API Base URL
 
-Set the base URL of the backend API Gateway in the application's network/constants configuration.
+Configure the backend API Gateway URL in:
+
+```text
+lib/shared/Constants.dart
+```
 
 For example:
 
@@ -128,16 +160,159 @@ flutter run
 ## Project Structure
 
 ```text
-lib/
-├── bloc/
-├── models/
-├── modules/
-├── remote/
-├── shared/
-└── main.dart
+NovaBank-Mobile/
+│
+├── assets/
+│   ├── sounds
+│   |   └── qr_beep.mp3
+│   ├── logo.png
+│
+├── lib/
+│   │
+│   ├── bloc/
+│   │   ├── Manager.dart
+│   │   └── States.dart
+│   │
+│   ├── models/
+│   │   ├── AccountInfoModel.dart
+│   │   ├── DailyTotalsModel.dart
+│   │   ├── LoginModel.dart
+│   │   ├── NotificationModel.dart
+│   │   ├── ProfileModel.dart
+│   │   └── TransactionModel.dart
+│   │
+│   ├── modules/
+│   │   ├── Auth/
+│   │   │   ├── ForgotPassword.dart
+│   │   │   ├── Login.dart
+│   │   │   ├── Register.dart
+│   │   │   ├── Register_2.dart
+│   │   │   ├── ResetForgotPassword.dart
+│   │   │   └── VerifyEmail.dart
+│   │   │
+│   │   ├── Base.dart
+│   │   ├── DailyTotals.dart
+│   │   ├── Home.dart
+│   │   ├── Notifications.dart
+│   │   ├── Profile.dart
+│   │   ├── ReceiveMoney.dart
+│   │   ├── SendMoney.dart
+│   │   ├── Settings.dart
+│   │   ├── Splash.dart
+│   │   ├── TransactionsHistory.dart
+│   │   ├── TransferRequested.dart
+│   │   ├── UpdateEmail.dart
+│   │   ├── UpdateEmail_2.dart
+│   │   └── UpdatePassword.dart
+│   │
+│   ├── remote/
+│   │   ├── DioHelper.dart
+│   │   ├── Interceptor.dart
+│   │   └── Routes.dart
+│   │
+│   ├── shared/
+│   │   ├── Constants.dart
+│   │   ├── Reusable.dart
+│   │   └── SecureStorage.dart
+│   │
+│   └── main.dart
+│
+├── pubspec.yaml
+├── README.md
+└── .gitignore
 ```
 
-The project uses a centralized `Manager` for application state and BLoC/Cubit-style state management.
+### Folder Responsibilities
+
+| Folder          | Responsibility                                               |
+| --------------- | ------------------------------------------------------------ |
+| `bloc/`         | Application state management and business operations         |
+| `models/`       | API response and application data models                     |
+| `modules/`      | Application screens and user-facing features                 |
+| `modules/Auth/` | Registration, login, OTP verification, and password recovery |
+| `remote/`       | API communication, routes, and authentication interceptor    |
+| `shared/`       | Constants, reusable components, and secure storage           |
+| `main.dart`     | Application entry point                                      |
+
+## Authentication
+
+NovaBank Mobile uses JWT-based authentication with access and refresh tokens.
+
+Authentication-related functionality includes:
+
+* Login
+* Registration
+* Email OTP verification
+* Forgot password
+* Reset password
+* Update password
+* Update email
+* Token refresh
+* Secure token storage
+
+The `Interceptor.dart` handles authentication headers and token refresh when an access token expires.
+
+`SecureStorage.dart` is used to securely store authentication credentials on the device.
+
+## Money Transfer
+
+Users can send money using:
+
+* Receiver wallet key
+* Transfer amount
+* Transaction PIN
+
+```text
+Send Money
+     |
+     v
+Receiver Wallet Key
+     |
+     v
+Amount
+     |
+     v
+Transaction PIN
+     |
+     v
+Confirm Transfer
+     |
+     v
+Transfer Requested
+     |
+     v
+Transaction Processing
+```
+
+A transfer may initially remain **PENDING** while the backend processes the request asynchronously.
+
+## Transaction History
+
+The transaction history screen supports:
+
+* Incoming transactions
+* Outgoing transactions
+* Transaction reference numbers
+* Transaction dates
+* Transaction amounts
+* Pagination
+* Pull-to-refresh
+* Loading indicators
+
+Daily transaction totals are also displayed through the `DailyTotals` module.
+
+## Notifications
+
+The application provides in-app notifications for account activity.
+
+Users can:
+
+* View notifications
+* Mark notifications as read
+* Delete notifications
+* Refresh notifications
+
+Notification data is represented by `NotificationModel.dart`.
 
 ## Backend Setup
 
@@ -170,6 +345,8 @@ Keep the following files local when applicable:
 * `google-services.json`
 * `GoogleService-Info.plist`
 
+Authentication tokens are stored using secure device storage.
+
 ## Development
 
 Run tests:
@@ -201,9 +378,10 @@ flutter build apk
 NovaBank Mobile is an ongoing **software engineering portfolio project** focused on:
 
 * Flutter mobile development
-* State management with BLoC / Cubit
+* BLoC / Cubit state management
 * REST API integration with Dio
 * JWT authentication and token refresh
+* Secure local storage
 * Form validation
 * Pagination
 * Pull-to-refresh
