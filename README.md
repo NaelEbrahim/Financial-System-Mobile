@@ -31,7 +31,7 @@ Add screenshots to the `screenshots/` folder and link them here.
 
 | Login                           | Home                          | Send Money                                | Transaction History                             |
 | ------------------------------- | ----------------------------- | ----------------------------------------- | ----------------------------------------------- |
-| ![Login](screenshots/login.png) | ![Home](screenshots/home.png) | ![Send Money](screenshots/send-money.png) | ![Transaction History](screenshots/history.png) |
+| ![Login](screenshots/login.jpg) | ![Home](screenshots/home.jpg) | ![Send Money](screenshots/send_money.jpg) | ![Transaction History](screenshots/transactions.jpg) |
 
 ## Tech Stack
 
